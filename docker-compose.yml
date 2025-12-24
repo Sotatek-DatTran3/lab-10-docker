@@ -1,0 +1,131 @@
+services:
+  # --- Databases ---
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-devdb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    deploy:
+      placement:
+        constraints: [node.labels.database == true]
+
+  mongodb:
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-devdb}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+    deploy:
+      placement:
+        constraints: [node.labels.database == true]
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-devdb}
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    deploy:
+      placement:
+        constraints: [node.labels.database == true]
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    deploy:
+      placement:
+        constraints: [node.labels.database == true]
+
+  # --- Application Services ---
+  react-frontend:
+    image: lab10-docker-react-frontend:latest
+    environment:
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000}
+    networks:
+      - app-network
+
+  nodejs-backend:
+    image: lab10-docker-nodejs-backend:latest
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - POSTGRES_URI=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-devdb}
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password}@mongodb:27017/${MONGO_DB:-devdb}?authSource=admin
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - app-network
+
+  php-backend:
+    image: lab10-docker-php-backend:latest
+    environment:
+      - DB_CONNECTION=mysql:host=mysql;dbname=${MYSQL_DATABASE:-devdb};user=${MYSQL_USER:-user};password=${MYSQL_PASSWORD:-password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - app-network
+
+  java-backend:
+    image: lab10-docker-java-backend:latest
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB:-devdb}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - app-network
+
+  python-backend:
+    image: lab10-docker-python-backend:latest
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devdb}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - app-network
+
+  dotnet-backend:
+    image: lab10-docker-dotnet-backend:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-devdb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - app-network
+
+  nestjs-backend:
+    image: lab10-docker-nestjs-backend:latest
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devdb}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  mongo_data:
+  mysql_data:
+  redis_data:
+
+networks:
+  app-network:

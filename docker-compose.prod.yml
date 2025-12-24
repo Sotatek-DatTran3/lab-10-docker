@@ -1,0 +1,55 @@
+# Production/Swarm overrides
+# Usage: docker stack deploy -c docker-compose.yml -c docker-compose.prod.yml lab10
+
+services:
+  # --- Infrastructure ---
+  nginx-lb:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    configs:
+      - source: nginx_config_v1
+        target: /etc/nginx/nginx.conf
+    networks:
+      - app-network
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  # --- Application Services (production ports) ---
+  react-frontend:
+    deploy:
+      replicas: 3
+
+  nodejs-backend:
+    ports:
+      - "8000:8000"
+
+  php-backend:
+    ports:
+      - "8001:80"
+
+  java-backend:
+    ports:
+      - "8002:8080"
+
+  python-backend:
+    ports:
+      - "8003:8000"
+
+  dotnet-backend:
+    ports:
+      - "8004:80"
+
+  nestjs-backend:
+    ports:
+      - "8005:3000"
+
+configs:
+  nginx_config_v1:
+    file: ./nginx/nginx.conf
+
+networks:
+  app-network:
+    driver: overlay
+
