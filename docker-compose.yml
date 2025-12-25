@@ -95,7 +95,7 @@ services:
   python-backend:
     image: lab10-docker-python-backend:latest
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devdb}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD-password}@postgres:5432/${POSTGRES_DB:-devdb}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     networks:
@@ -105,7 +105,7 @@ services:
     image: lab10-docker-dotnet-backend:latest
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-devdb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-devdb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-password}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     networks:

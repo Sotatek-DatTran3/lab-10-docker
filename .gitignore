@@ -58,3 +58,6 @@ temp/
 # Package manager
 .pnp.*
 .yarn/
+
+*.md
+!README.md

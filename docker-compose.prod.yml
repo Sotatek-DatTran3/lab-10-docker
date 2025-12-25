@@ -22,32 +22,32 @@ services:
       replicas: 3
 
   nodejs-backend:
-    ports:
-      - "8000:8000"
+    deploy:
+      replicas: 1
 
   php-backend:
-    ports:
-      - "8001:80"
+    deploy:
+      replicas: 1
 
   java-backend:
-    ports:
-      - "8002:8080"
+    deploy:
+      replicas: 1
 
   python-backend:
-    ports:
-      - "8003:8000"
+    deploy:
+      replicas: 1
 
   dotnet-backend:
-    ports:
-      - "8004:80"
+    deploy:
+      replicas: 1
 
   nestjs-backend:
-    ports:
-      - "8005:3000"
+    deploy:
+      replicas: 1
 
 configs:
   nginx_config_v1:
-    file: ./nginx/nginx.conf
+    file: ./nginx/nginx_v2.conf
 
 networks:
   app-network:
